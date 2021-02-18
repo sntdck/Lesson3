@@ -1,0 +1,9 @@
+public class FutureClass {
+    @future
+    public static void FutureMethod(String driverName){
+        Driver__c driver = new Driver__c(Name = driverName);
+        insert driver;
+        System.debug(driver + 'after insert');
+    }
+
+}

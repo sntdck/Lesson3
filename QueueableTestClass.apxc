@@ -1,0 +1,23 @@
+public class QueueableTestClass implements Queueable {
+    private String companyName;
+    private ID parentId;
+    
+    public QueueableTestClass(String name, ID parentId){
+        this.companyName = name;
+        this.parentId = parentId;
+
+    }
+    public void execute(QueueableContext context) {
+        if(parentId==null){
+        Company__c company = new Company__c(Name = companyName);
+        insert company;
+            System.debug(company);
+            System.enqueueJob(new QueueableTestClass('Test company', parentId));
+        }else{
+            Driver__c driver = new Driver__c(Name = companyName);
+            insert driver;
+            System.debug(driver);
+        }
+        System.enqueueJob(new QueueableTestClass('Test class', parentId));
+    }
+}

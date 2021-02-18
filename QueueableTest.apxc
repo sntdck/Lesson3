@@ -1,0 +1,23 @@
+@isTest
+public class QueueableTest {
+    @testSetup
+    static void setup() {
+        List<Company__c> companies = new List<Company__c>();
+        companies.add(new Company__c(name='Parents'));
+        for (Integer i = 0; i < 150; i++) {
+            companies.add(new Company__c(
+                name='Test company'+i
+            ));
+        }
+        insert companies;
+    }
+    static void testQueueable() {
+        
+        Id parentId = [select id from Company__c where name = 'Parent'][0].Id;
+        List<Company__c> companies = [select id, name from Company__c where name like 'Test company%'];
+        QueueableTestClass updater = new QueueableTestClass('Companies', parentId);
+        Test.startTest();
+        System.enqueueJob(updater);
+        Test.stopTest();
+    }
+}

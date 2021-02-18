@@ -1,0 +1,45 @@
+public class BatchTestClass implements Database.Batchable<sObject>, schedulable {
+    public Integer records = 0;
+    
+    public BatchTestClass (){
+        
+    }
+    public Database.QueryLocator start(Database.BatchableContext bc) {
+        return DataBase.getQueryLocator(
+            'Select Name, Type_order__c(Select Name, Order__c From Driver__c) From Company__c');
+    }
+    public void execute(Database.BatchableContext bc, List<Company__c> records){
+        List<Driver__c> drivers = new List<Driver__c>();
+        for(Company__c company : records){
+            for(Driver__c driver : drivers){
+                driver.Name = company.Name;
+                driver.Order__c = company.Type_order__c;
+                
+                drivers.add(driver);
+                
+            }
+        }
+        update drivers;
+    }
+    public void finish(Database.BatchableContext bc){
+        System.debug(records + 'in processed');
+        AsyncApexJob job = [Select Id, Status, CreatedBy.Email
+                           From AsyncApexJob
+                           Where Id = :bc.getJobId()];
+        System.debug(job);
+    }
+    
+    public void execute(SchedulableContext sc){
+        database.executeBatch(new BatchTestClass());
+    }
+    
+    public static void start(integer hour){
+        String jobName = 'Job';
+        if(hour==0) database.executeBatch(new BatchTestClass());
+        else{
+            jobName = jobName += ' - ' + datetime.now().format();
+            string cron = '0 0' + string.valueOf(hour) + ' * * ?';
+            System.schedule(jobName, cron, new BatchTestClass());
+        }
+    }
+}

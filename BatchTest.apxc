@@ -1,0 +1,24 @@
+@isTest
+private class BatchTest {
+    @testSetup
+    static void setup() {
+        List<Company__c> company = new List<Company__c>();
+        List<Driver__c> driver = new List<Driver__c>();
+        for (Integer i=0;i<5;i++) {
+            company.add(new Company__c(name = 'Company '+i,
+                Type_order__c ='Passenger', Order__c='order'));
+        }
+        insert company;
+        for (Company__c companies : [select id from Company__c]) {
+            driver.add(new Driver__c(name='Igor',
+                order__c = 'passenger'));
+        }
+        insert driver;
+    }
+    @isTest static void test() {
+        Test.startTest();
+        BatchTestClass tests = new BatchTestClass();
+        Id batchId = Database.executeBatch(tests);
+        Test.stopTest();
+    }
+}
